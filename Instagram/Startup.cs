@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,6 +24,17 @@ namespace Instagram
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            string connection = Configuration.GetConnectionString("DbConnection");
+            services.AddDbContext<InstagramContext>(options => options.UseNpgsql(connection))
+                .AddIdentity<User>(options =>
+                {
+                    options.Password.RequiredLength = 5;
+                    options.Password.RequireNonAlphanumeric = false;
+                    options.Password.RequireLowercase = false;
+                    options.Password.RequireUppercase = false;
+                    options.Password.RequireDigit = false;
+                })
+                .AddEntityFrameworkStores<InstagramContext>();
             services.AddControllersWithViews();
         }
 
@@ -40,6 +52,7 @@ namespace Instagram
                 app.UseHsts();
             }
 
+            app.UseAuthentication();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
