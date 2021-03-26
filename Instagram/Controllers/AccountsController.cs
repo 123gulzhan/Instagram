@@ -1,10 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using Instagram.Enums;
 using Instagram.Models;
+using Instagram.Services;
 using Instagram.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using SignInResult = Microsoft.AspNetCore.Mvc.SignInResult;
+using Microsoft.Extensions.Hosting;
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
+
 
 namespace Instagram.Controllers
 {
@@ -12,16 +20,23 @@ namespace Instagram.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        
+        private readonly FileUploadService _uploadService;
+        private readonly IHostEnvironment _environment;
 
-        public AccountsController(UserManager<User> userManager, SignInManager<User> signInManager)
+        public AccountsController(UserManager<User> userManager, SignInManager<User> signInManager, FileUploadService uploadService, IHostEnvironment environment)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _uploadService = uploadService;
+            _environment = environment;
         }
         
         [HttpGet]
         public IActionResult Register()
         {
+            List<string> sexType = Enum.GetNames(typeof(Sex)).ToList();
+            ViewBag.SexType = sexType;
             return View();
         }
 
@@ -29,6 +44,11 @@ namespace Instagram.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            string path = Path.Combine(_environment.ContentRootPath, "wwwroot\\InstagramFiles\\Avatars\\");
+            string avatarPath = $"/InstagramFiles/Avatars/{model.FormFile.FileName}";
+            _uploadService.Upload(path, model.FormFile.FileName, model.FormFile);
+            model.Avatar = avatarPath;
+            
             if (ModelState.IsValid)
             {
                 User user = new User
@@ -37,16 +57,17 @@ namespace Instagram.Controllers
                     Email = model.Email,
                     Avatar = model.Avatar,
                     Name = model.Name,
-                    About = model.About,
+                    Description = model.Description,
                     PhoneNumber = model.PhoneNumber,
-                    Sex = model.Sex,
-                    Posts = new List<Post>(),
-                    FollowsUsers = new List<User>(),
-                    FollowerUsers = new List<User>()
+                    Sex = model.Sex == Sex.Female ? Sex.Female
+                    : model.Sex == Sex.Male ? Sex.Male
+                    : Sex.NotSelected,
+                    Posts = new List<Post>()
                 };
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+                    await _userManager.AddToRoleAsync(user, "user");
                     await _signInManager.SignInAsync(user, false);
                     return RedirectToAction("Index", "Posts");
                 }
@@ -79,7 +100,7 @@ namespace Instagram.Controllers
                     user = await _userManager.FindByEmailAsync(model.LoginOrEmail);
                 }
 
-                Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(
+                SignInResult result = await _signInManager.PasswordSignInAsync(
                     user,
                     model.Password,
                     model.RememberMe, false);

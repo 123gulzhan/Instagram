@@ -13,4 +13,9 @@
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="5.0.2" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Migrations" />
+      <Folder Include="wwwroot\InstagramFiles\Avatars" />
+    </ItemGroup>
+
 </Project>

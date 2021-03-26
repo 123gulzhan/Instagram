@@ -1,15 +1,15 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Instagram.Enums;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Instagram.ViewModels
 {
     public class RegisterViewModel
     {
-        [Display(Name = "Name")]
-        public string Name { get; set; }
-        
-        [Required]
+        [Required(ErrorMessage = "Логин вроде как нужен..")]
         [Display(Name = "Login")]
         public string Login { get; set; }
         
@@ -17,17 +17,23 @@ namespace Instagram.ViewModels
         [Display(Name = "Email")]
         public string Email { get; set; }
         
-        [Required]
-        [Display(Name = "Avatar")]
         public string Avatar { get; set; }
+        [NotMapped]
+        [Required(ErrorMessage = "Фото тоже нужно..")]
+        [Display(Name = "FormFile")]
+        public IFormFile FormFile { get; set; }
+        
+        
+        [Display(Name = "Name")]
+        public string Name { get; set; }
         
         
         [Display(Name = "PhoneNumber")]
         public string PhoneNumber { get; set; }
         
         
-        [Display(Name = "About")]
-        public string About { get; set; }
+        [Display(Name = "Description")]
+        public string Description { get; set; }
         
         
         [Display(Name = "Sex")]

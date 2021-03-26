@@ -1,0 +1,77 @@
+﻿@using Instagram.Enums
+@model Instagram.ViewModels.RegisterViewModel
+
+<h4>Регистрация нового пользователя</h4>
+
+<form method="post" asp-action="Register" asp-controller="Accounts" enctype="multipart/form-data">
+    <div asp-validation-summary="ModelOnly"></div>
+    <div>
+        <label asp-for="Login"></label>
+        <input asp-for="Login">
+        <span asp-validation-for="Login"></span>
+    </div>
+    
+    <div>
+        <label asp-for="Email"></label>
+        <input asp-for="Email">
+        <span asp-validation-for="Email"></span>
+    </div>
+    
+    <div>
+        <label asp-for="FormFile">Your Avatar
+            <input asp-for="FormFile" type="file">
+            <span asp-validation-for="FormFile" class="field-va"></span>
+        </label>
+    </div>
+    
+    <div>
+        <label asp-for="Name"></label>
+        <input asp-for="Name">
+        <span asp-validation-for="Name"></span>
+    </div>
+    
+    
+    <div>
+        <label asp-for="PhoneNumber"></label>
+        <input asp-for="PhoneNumber">
+        <span asp-validation-for="PhoneNumber"></span>
+    </div>
+    
+    <div>
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description" placeholder="Описание" rows="3" cols="15"></textarea>
+        <span asp-validation-for="Description"></span>
+    </div>
+    
+    <div>
+        <label asp-for="Sex">
+            Sex
+            <select asp-for="@Model.Sex">
+                @foreach (var sex in ViewBag.SexType)
+                {
+                    <option value="@sex">@sex</option>
+                }
+            </select>
+        </label>
+    </div>
+    
+    <div>
+        <label asp-for="Password"></label>
+        <input asp-for="Password">
+        <span asp-validation-for="Password"></span>
+    </div>
+    <div>
+        <label asp-for="ConfirmPassword"></label>
+        <input asp-for="ConfirmPassword">
+        <span asp-validation-for="ConfirmPassword"></span>
+    </div>
+    <div>
+        <input type="submit" value="Регистрация">
+    </div>
+</form>
+
+@section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

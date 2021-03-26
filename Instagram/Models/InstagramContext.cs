@@ -1,12 +1,18 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace Instagram.Models
 {
-    public class InstagramContext : DbContext
+    public class InstagramContext : IdentityDbContext<User>
     {
-        public DbSet<User> Users;
+        public override DbSet<User> Users { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Like> Likes { get; set; }
         public DbSet<Comment> Comments { get; set; }
+
+        public InstagramContext(DbContextOptions<InstagramContext> options) : base(options)
+        {
+            
+        }
     }
 }
