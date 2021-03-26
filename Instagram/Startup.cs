@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Instagram.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,7 +28,7 @@ namespace Instagram
         {
             string connection = Configuration.GetConnectionString("DbConnection");
             services.AddDbContext<InstagramContext>(options => options.UseNpgsql(connection))
-                .AddIdentity<User>(options =>
+                .AddIdentity<User, IdentityRole>(options =>
                 {
                     options.Password.RequiredLength = 5;
                     options.Password.RequireNonAlphanumeric = false;
