@@ -6,7 +6,6 @@ namespace Instagram.Models
 {
     public class User : IdentityUser
     {
-        public string Login { get; set; }
         public string Avatar { get; set; }
         public string Name { get; set; }
         public string About { get; set; }
