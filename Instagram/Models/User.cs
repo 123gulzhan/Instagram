@@ -14,7 +14,6 @@ namespace Instagram.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public Sex Sex { get; set; }
-        public List<Post> Posts { get; set; }
-       
+        
     }
 }

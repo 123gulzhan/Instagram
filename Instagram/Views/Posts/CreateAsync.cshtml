@@ -1,0 +1,25 @@
+﻿@model Post
+
+<h4>Создание публикации</h4>
+<form method="post" asp-controller="Posts" asp-action="CreateAsync" enctype="multipart/form-data">
+    <label asp-for="FormFile">
+        Загрузите изображение для публикации
+        <input asp-for="FormFile">
+        <span asp-validation-for="FormFile"></span>
+    </label>
+    <label asp-for="Description">
+        Добавьте описание к публикации (не обязательно)
+        <textarea cols="10" rows="3" placeholder="Описание"></textarea>
+        <span asp-validation-for="Description"></span>
+    </label>
+    <div>
+        <input type="submit" value="Создать">
+    </div>
+</form>
+
+
+@section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

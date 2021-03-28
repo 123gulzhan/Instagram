@@ -8,8 +8,10 @@ using Instagram.Enums;
 using Instagram.Models;
 using Instagram.Services;
 using Instagram.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
 
@@ -18,18 +20,21 @@ namespace Instagram.Controllers
 {
     public class AccountsController : Controller
     {
+        private InstagramContext _db;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         
         private readonly FileUploadService _uploadService;
         private readonly IHostEnvironment _environment;
 
-        public AccountsController(UserManager<User> userManager, SignInManager<User> signInManager, FileUploadService uploadService, IHostEnvironment environment)
+        public AccountsController(UserManager<User> userManager, SignInManager<User> signInManager, 
+            FileUploadService uploadService, IHostEnvironment environment, InstagramContext db)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _uploadService = uploadService;
             _environment = environment;
+            _db = db;
         }
         
         [HttpGet]
@@ -61,15 +66,15 @@ namespace Instagram.Controllers
                     PhoneNumber = model.PhoneNumber,
                     Sex = model.Sex == Sex.Female ? Sex.Female
                     : model.Sex == Sex.Male ? Sex.Male
-                    : Sex.NotSelected,
-                    Posts = new List<Post>()
+                    : Sex.NotSelected//,
+                    //Posts = new List<Post>()
                 };
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
                     await _userManager.AddToRoleAsync(user, "user");
                     await _signInManager.SignInAsync(user, false);
-                    return RedirectToAction("Index", "Posts");
+                    return RedirectToAction("UserProfile", "Accounts");
                 }
 
                 foreach (var error in result.Errors)
@@ -112,7 +117,7 @@ namespace Instagram.Controllers
                         return Redirect(model.ReturnUrl);
                     }
 
-                    return RedirectToAction("Login");
+                    return RedirectToAction("UserProfile", "Accounts");
                 }
                 ModelState.AddModelError("", "Неправильный логин и(или) пароль");
             }
@@ -125,21 +130,34 @@ namespace Instagram.Controllers
         public async Task<IActionResult> LogOff()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Index", "Posts");
+            return RedirectToAction("UserProfile", "Accounts");
         }
+
         
+        [HttpGet]
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+        public async Task<IActionResult> UserProfile()
+        {
+            string userId = _userManager.GetUserId(User);
+            
+            User user = await _db.Users.FindAsync(userId);
+            if (user != null)
+            {
+                 IQueryable<Post> posts = _db.Posts.AsQueryable().Where(p => p.AuthorId == userId)
+                                .Include(p=>p.Author);
+                            
+                            ProfileViewModel model = new ProfileViewModel
+                            {
+                                User = user,
+                                Posts = posts,
+                                Subscribes = _db.Subscribes.AsQueryable().Where(s => s.SubscriberId == userId),
+                                Followers = _db.Subscribes.AsQueryable().Where(s => s.UserId == userId)
+                            };
+                            return View(model);
+            }
+
+            return View(new ProfileViewModel());
+        }
         
         
         
