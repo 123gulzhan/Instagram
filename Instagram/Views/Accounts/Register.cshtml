@@ -44,7 +44,7 @@
     </div>
     
     <div>
-        <label asp-for="Sex">
+        <label asp-for="@Model.Sex">
             Sex
             <select asp-for="@Model.Sex">
                 @foreach (var sex in ViewBag.SexType)

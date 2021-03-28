@@ -19,11 +19,10 @@ namespace Instagram.Models
         public IFormFile FormFile { get; set; }
         public string Description { get; set; }
         
-        [Required]
         public DateTime CreationDate { get; set; } = DateTime.Now;
-        [Required]
+        
         public List<Like> Likes { get; set; }
-        [Required]
+        
         public List<Comment> Comments { get; set; }
         
     }

@@ -10,6 +10,7 @@ namespace Instagram.ViewModels
     public class RegisterViewModel
     {
         [Required(ErrorMessage = "Логин вроде как нужен..")]
+        [RegularExpression(@"^([0-9a-zA-Z_.]){1,12}", ErrorMessage = "Логин должен содержать только буквы, цифры, точку и _")]
         [Display(Name = "Login")]
         public string Login { get; set; }
         

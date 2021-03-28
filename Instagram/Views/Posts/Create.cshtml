@@ -1,0 +1,33 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model Post
+@inject UserManager<User> UserManager
+
+<h4 class="text-center my-3">Создание публикации</h4>
+<div class="container d-flex flex-column align-items-center">
+    <form method="post" asp-controller="Posts" asp-action="Create" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly"></div>
+        <div class="my-3 text-center">
+            <label asp-for="FormFile">
+                Загрузите изображение для публикации<br>
+                <input asp-for="FormFile" class="my-1 w-100">
+                <span asp-validation-for="FormFile"></span>
+            </label>
+        </div>
+        <div class="my-3 text-center">
+            <label asp-for="Description">
+                Добавьте описание к публикации (не обязательно)<br>
+                <textarea asp-for="Description" cols="30" rows="3" placeholder="Описание" class="my-1"></textarea>
+                <span asp-validation-for="Description"></span>
+            </label>
+        </div>
+        <div class="my-3 text-center">
+            <input type="submit" value="Создать">
+        </div>
+    </form>
+</div>
+
+@section Scripts{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

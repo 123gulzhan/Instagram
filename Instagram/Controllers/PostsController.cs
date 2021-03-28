@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
@@ -18,11 +19,11 @@ namespace Instagram.Controllers
         private InstagramContext _db;
         private readonly FileUploadService _uploadService;
         private readonly IHostEnvironment _environment;
-        private readonly UserManager<ClaimsPrincipal> _userManager;
+        private readonly UserManager<User> _userManager;
 
 
         public PostsController(InstagramContext db, FileUploadService uploadService,
-            IHostEnvironment environment, UserManager<ClaimsPrincipal> userManager)
+            IHostEnvironment environment, UserManager<User> userManager)
         {
             _db = db;
             _uploadService = uploadService;
@@ -36,22 +37,23 @@ namespace Instagram.Controllers
             IQueryable<Post> posts = _db.Posts
                 .Include(p => p.Likes)
                 .Include(p => p.Comments)
-                .Include(p => p.AuthorId);
+                .Include(p => p.Author);
+                
             return View(posts);
         }
 
 
         [HttpGet]
-        public IActionResult CreateAsync()
+        public IActionResult Create()
         {
             return View();
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> CreateAsync(Post post)
+        public async Task<IActionResult> Create(Post post)
         {
-            string userId = await _userManager.GetUserIdAsync(User);
+            string userId = _userManager.GetUserId(User);
             User user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
             
             if (userId != null && user != null && post != null)
@@ -75,36 +77,35 @@ namespace Instagram.Controllers
                 string postImagePath = $"/InstagramFiles/PostsImagesByUserId/{userId}/{post.FormFile.FileName}";
                 _uploadService.Upload(path, post.FormFile.FileName, post.FormFile);
                 post.ImagePath = postImagePath;
-
-                if (ModelState.IsValid)
-                {
+                
+                //if (ModelState.IsValid)
+                //{
                     await _db.Posts.AddAsync(post);
                     await _db.SaveChangesAsync();
                     return RedirectToAction("Index", "Posts");
-                }
+                //}
+               
             }
 
             return NotFound();
 
         }
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetPost(int? postId)
+        {
+            if (postId != null)
+            {
+                Post post = _db.Posts.FirstOrDefault(p => p.Id == postId);
+                post.Author = await _userManager.FindByIdAsync(post.AuthorId);
+                
+                if (post != null)
+                {
+                    return View(post);
+                }
+            }
+            return NotFound();
+        }
     }
 }

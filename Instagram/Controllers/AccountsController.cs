@@ -61,13 +61,12 @@ namespace Instagram.Controllers
                     UserName = model.Login,
                     Email = model.Email,
                     Avatar = model.Avatar,
-                    Name = model.Name,
+                    Name = model.Name.ToLower(),
                     Description = model.Description,
                     PhoneNumber = model.PhoneNumber,
                     Sex = model.Sex == Sex.Female ? Sex.Female
                     : model.Sex == Sex.Male ? Sex.Male
-                    : Sex.NotSelected//,
-                    //Posts = new List<Post>()
+                    : Sex.NotSelected
                 };
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
@@ -143,13 +142,10 @@ namespace Instagram.Controllers
             User user = await _db.Users.FindAsync(userId);
             if (user != null)
             {
-                 IQueryable<Post> posts = _db.Posts.AsQueryable().Where(p => p.AuthorId == userId)
-                                .Include(p=>p.Author);
-                            
-                            ProfileViewModel model = new ProfileViewModel
+                ProfileViewModel model = new ProfileViewModel
                             {
                                 User = user,
-                                Posts = posts,
+                                Posts = _db.Posts.AsQueryable().Where(p => p.AuthorId == userId).Include(p=>p.Author),
                                 Subscribes = _db.Subscribes.AsQueryable().Where(s => s.SubscriberId == userId),
                                 Followers = _db.Subscribes.AsQueryable().Where(s => s.UserId == userId)
                             };
