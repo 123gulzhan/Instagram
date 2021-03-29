@@ -137,11 +137,22 @@ namespace Instagram.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> UserProfile()
+        public async Task<IActionResult> UserProfile(string id)
         {
-            string userId = _userManager.GetUserId(User);
-
-            User user = await _userManager.FindByIdAsync(userId);
+            User user;
+            string userId;
+            /*if (id != null)
+            {
+                userId = id;
+            }
+            else
+            {
+                userId = _userManager.GetUserId(User);
+            }
+            */
+            
+            userId = id != null ? userId = id : _userManager.GetUserId(User);
+            user = await _userManager.FindByIdAsync(userId);
             if (user != null)
             {
                 ProfileViewModel model = new ProfileViewModel
@@ -161,7 +172,28 @@ namespace Instagram.Controllers
             return View(new ProfileViewModel());
         }
 
+        
+        [HttpGet]
+        //-Логин, -Электронная почта, -Имя, -Информация о пользователе. 
+        public IActionResult Searching(string search)
+        {
+            IQueryable<User> allUsers = _userManager.Users;
+            List<User> resultUsers = new List<User>();
+            
+            if (search != null)
+            {
+                foreach (var user in allUsers)
+                {
+                    if(user.UserName.Contains(search) && !resultUsers.Contains(user)) resultUsers.Add(user);
+                    if(user.Email.Contains(search) && !resultUsers.Contains(user)) resultUsers.Add(user);
+                    if(user.Name.Contains(search) && !resultUsers.Contains(user)) resultUsers.Add(user);
+                    if(user.Description.Contains(search) && !resultUsers.Contains(user)) resultUsers.Add(user);
+                }
 
+                return View(resultUsers);
+            }
 
+            return NotFound();
+        }
     }
 }

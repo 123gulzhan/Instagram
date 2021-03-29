@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿@using System.Reflection.Metadata
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -9,7 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="~/css/site.css"/>
-    
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
 </head>
 <body>
 <header>
@@ -27,10 +28,14 @@
             </button>
             <div class="navbar-collapse collapse">
                 
-                <form class="form-inline col-md-10 my-2 my-lg-0 d-flex justify-content-center">
-                    <input class="form-control col-md-6 mr-sm-2" style="width: 160px;" type="search" placeholder="Поиск" aria-label="Search">
-                    @**<button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>**@
-                </form>
+                
+               
+                <form asp-action="Searching" asp-controller="Accounts" method="get" 
+                    class="form-inline col-md-10 my-2 my-lg-0 d-flex justify-content-center">
+                        <input id="search" name="search" class="form-control col-md-6 mr-sm-2" style="width: 160px;" type="search" placeholder="Поиск" aria-label="Search"/>
+                        
+                        <button class="btn btn-success my-2 my-sm-0" type="submit" id="submit">Search</button>
+                    </form>
                 
                 
                 <div class="login-group col-md-2 d-flex justify-content-end">
@@ -59,5 +64,6 @@
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 @RenderSection("Scripts", required: false)
+
 </body>
 </html>
