@@ -1,0 +1,13 @@
+﻿@model Comment
+
+<div class="p-2 mt-5">
+    <div>
+        <form method="post" asp-controller="Posts" asp-action="TryMakeComment">
+            <label>
+                <textarea asp-for="CommentText" rows="3" cols="40"></textarea>
+            </label>
+            <input type="hidden" asp-for="PostId" value="@Model.PostId">
+            <button type="submit" class="btn btn-info" style="font-size: 12px;">Добавить</button>
+        </form>
+    </div>
+</div>

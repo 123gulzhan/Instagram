@@ -1,26 +1,44 @@
-﻿@model IQueryable<Post>
+﻿@using Microsoft.AspNetCore.Identity
+@model Instagram.ViewModels.PostsIndexViewModel
+@inject UserManager<User> UserManager
 
 @{
     ViewBag.Title = "Публикации";
     Layout = "_Layout";
 }
 
-@if (Model.Count() != 0)
+@if (Model.Posts.Count() != 0)
 {
   <div class="container">
 
-    @foreach (var post in @Model)
+    @foreach (var post in @Model.Posts)
     {
       <div class="card mb-3">
         <h5 class="py-4 pl-3">
           <img src="@post.Author.Avatar" class="rounded-circle mr-3" alt="user's Avatar" style="width: 34px;">
           @post.Author.UserName
-          </h5>
-        
-        
+        </h5>
+
         <img src="@post.ImagePath" class="card-img-top" alt="postImage">
         <div class="row no-gutters mt-2">
-          <h4><a href="#"><i class="far fa-heart text-dark ml-3"></i></a></h4>
+          <h4>
+            <a asp-controller="Posts" asp-action="TryMakeLike" asp-route-postId="@post.Id" asp-route-actionName="Index">
+              @if (post.Likes.Count() != 0)
+              {
+                foreach (var like in post.Likes.ToList())
+                {
+                  if (@like.UserId.Equals(UserManager.GetUserId(User)))
+                  {
+                    <i class="fas fa-heart ml-3" style="color: #ff0000;"></i>
+                  }
+                }
+              }
+              else
+              {
+                <i class="far fa-heart text-dark ml-3"></i>
+              }
+            </a></h4>
+
           <h4><a href="#"><i class="far fa-comment text-dark ml-3"></i></a></h4>
         </div>
         <div class="card-body p-1 mt-3 ml-3">
@@ -30,12 +48,37 @@
               <b>@post.Author.UserName</b> &#160 @post.Description
             </p>
           }
+          
+          @if (post.Comments.Count() != 0)
+          {
+            @foreach (var comm in post.Comments.ToList())
+            {
+              <p>
+                <b class="mr-3">@comm.User.UserName</b>
+                @comm.CommentText
+              </p>
+            }   
+          }
+         
+          
+          @{
+              await Html.RenderPartialAsync("../PartialViews/CommentAddingFormPartial", 
+                new Comment {PostId = post.Id});
+          }
+          
+          
           <p class="card-text">
-            <small class="text-muted">@post.CreationDate.ToShortDateString() 
-              </small>
+            <small class="text-muted">@post.CreationDate.ToShortDateString()
+            </small>
           </p>
         </div>
       </div>
     }
   </div>
+}
+
+@section Scripts{
+  @{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+  }
 }

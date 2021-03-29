@@ -3,16 +3,13 @@
 @{
     ViewBag.Title = "Start";
     Layout = "_Layout";
-}
-
-@{
   var postsCount = 0;
-  if (Model.Posts.ToList().Count() != 0)
-  {
-    postsCount = Model.Posts.Count();
-  }
 }
 
+@if (User.Identity.IsAuthenticated && ViewBag.UserPostsCount != 0)
+{
+  postsCount = ViewBag.UserPostsCount;
+}
 
 @if (!User.Identity.IsAuthenticated)
 {
@@ -31,7 +28,7 @@ else
         <div class="col-md-8 pl-5 px-3">
           <div class="d-flex flex-row justify-content-start align-items-center pl-5 mb-3">
             <h4 class="my-0 mr-3 font-weight-normal">@Model.User.UserName.ToLower()</h4>
-            <a href="#"><button class="btn-sm btn-light border- ml-5">Редактировать профиль</button></a>
+            <a href="#"><button class="btn-sm btn-light border-secondary ml-5">Редактировать профиль</button></a>
             <form method="post" asp-controller="Accounts" asp-action="LogOff">
               <input type="submit" value="Выйти" class="btn-sm btn-light border-secondary ml-5"/>
             </form>
@@ -63,7 +60,7 @@ else
     </div>
 
     <div>
-      <a asp-controller="Posts" asp-action="Create"><button class="btn btn-light my-3">Добавить публикацию</button></a>
+      <a asp-controller="Posts" asp-action="Create"><button class="btn btn-light border-secondary my-3">Добавить публикацию</button></a>
   </div>
   
   

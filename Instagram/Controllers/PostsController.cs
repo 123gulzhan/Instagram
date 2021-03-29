@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Instagram.Models;
 using Instagram.Services;
+using Instagram.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -34,12 +35,17 @@ namespace Instagram.Controllers
         // GET
         public IActionResult Index()
         {
-            IQueryable<Post> posts = _db.Posts
-                .Include(p => p.Likes)
-                .Include(p => p.Comments)
-                .Include(p => p.Author);
+            PostsIndexViewModel model = new PostsIndexViewModel
+            {
+                Posts = _db.Posts
+                    .Include(p => p.Likes).ThenInclude(l=> l.User)
+                    .Include(p => p.Comments).ThenInclude(c=> c.User)
+                    .Include(p => p.Author)
+                    .OrderByDescending(p=>p.CreationDate)
                 
-            return View(posts);
+               
+            };
+            return View(model);
         }
 
 
@@ -55,15 +61,15 @@ namespace Instagram.Controllers
         {
             string userId = _userManager.GetUserId(User);
             User user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            
+
             if (userId != null && user != null && post != null)
             {
                 post.AuthorId = userId;
                 post.Author = user;
                 post.Comments = new List<Comment>();
                 post.Likes = new List<Like>();
-                
-                
+
+
                 string dirName = "wwwroot/InstagramFiles/PostsImagesByUserId";
                 DirectoryInfo dirInfo = new DirectoryInfo(dirName);
                 string[] dirs = Directory.GetDirectories(dirName);
@@ -72,19 +78,20 @@ namespace Instagram.Controllers
                     dirInfo.CreateSubdirectory(userId);
                 }
 
-                
-                string path = Path.Combine(_environment.ContentRootPath, $"wwwroot\\InstagramFiles\\PostsImagesByUserId\\{userId}\\");
+
+                string path = Path.Combine(_environment.ContentRootPath,
+                    $"wwwroot\\InstagramFiles\\PostsImagesByUserId\\{userId}\\");
                 string postImagePath = $"/InstagramFiles/PostsImagesByUserId/{userId}/{post.FormFile.FileName}";
                 _uploadService.Upload(path, post.FormFile.FileName, post.FormFile);
                 post.ImagePath = postImagePath;
-                
+
                 //if (ModelState.IsValid)
                 //{
-                    await _db.Posts.AddAsync(post);
-                    await _db.SaveChangesAsync();
-                    return RedirectToAction("Index", "Posts");
+                await _db.Posts.AddAsync(post);
+                await _db.SaveChangesAsync();
+                return RedirectToAction("Index", "Posts");
                 //}
-               
+
             }
 
             return NotFound();
@@ -95,17 +102,113 @@ namespace Instagram.Controllers
         [HttpGet]
         public async Task<IActionResult> GetPost(int? postId)
         {
+            ViewBag.Like = false;
             if (postId != null)
             {
                 Post post = _db.Posts.FirstOrDefault(p => p.Id == postId);
-                post.Author = await _userManager.FindByIdAsync(post.AuthorId);
-                
+
                 if (post != null)
                 {
+                    post.Author = await _userManager.FindByIdAsync(post.AuthorId);
+
+                    post.Likes = (from like in _db.Likes
+                            .Include(l => l.User)
+                            .Include(l => l.Post)
+                        where like.PostId == postId
+                        select like).ToList();
+
+                    post.Comments = (from comment in _db.Comments
+                            .Include((c => c.User))
+                            .Include(c => c.Post)
+                        where comment.PostId == postId
+                        select comment).ToList();
+                    post.Comments = post.Comments.AsQueryable().OrderBy(p => p.CommentCreationDate).ToList();
+
+                    foreach (var like in post.Likes)
+                    {
+                        if (like.UserId.Equals(_userManager.GetUserId(User)))
+                        {
+                            ViewBag.Like = true;
+                        }
+                    }
+
                     return View(post);
                 }
             }
+
             return NotFound();
+        }
+
+
+        public async Task<IActionResult> TryMakeLike(int postId, string actionName)
+        {
+            Post post = postId != 0 ? _db.Posts.FirstOrDefault(p => p.Id == postId) : new Post();
+
+            if (post != null)
+            {
+                post.Author = await _userManager.FindByIdAsync(post.AuthorId);
+                post.Likes = (from like in _db.Likes.Include(l => l.User)
+                        .Include(l => l.Post) where like.PostId == postId
+                    select like).ToList();
+                post.Comments = (from comment in _db.Comments.Include((c => c.User))
+                        .Include(c => c.Post) where comment.PostId == postId
+                    select comment).ToList();
+                
+                bool result = false;
+                if (post.Likes.Any())
+                {
+                    foreach (var like in post.Likes)
+                    {
+                        if (like.UserId.Equals(_userManager.GetUserId(User)))
+                        {
+                            result = true;
+                        }
+                        
+                    }
+                }
+
+                if (!result)
+                {
+                    await _db.Likes.AddAsync(new Like
+                    {
+                        PostId = postId,
+                        Post = post,
+                        UserId = _userManager.GetUserId(User),
+                        User = await _userManager.GetUserAsync(User)
+                    });
+                    await _db.SaveChangesAsync();
+                    ViewBag.Like = true;
+                }
+                else
+                {
+                    Like like = _db.Likes.FirstOrDefault(l => l.PostId == postId);
+                    if (like != null)
+                    {
+                        _db.Entry(like).State = EntityState.Deleted;
+                        await _db.SaveChangesAsync();
+                        ViewBag.Like = false;
+                    }
+                }
+                return RedirectToAction(actionName, new{ postId = postId});
+            }
+            return NotFound();
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> TryMakeComment(Comment comment)
+        {
+            if (comment != null)
+            {
+                comment.UserId = _userManager.GetUserId(User);
+                comment.User =  await _userManager.FindByIdAsync(comment.UserId);
+                comment.Post = _db.Posts.FirstOrDefault(p => p.Id == comment.PostId);
+                
+                _db.Comments.Add(comment);
+                _db.SaveChanges();
+            }
+
+            return RedirectToAction("GetPost", "Posts", new { postId = comment.PostId});
         }
     }
 }

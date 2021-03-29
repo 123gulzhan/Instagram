@@ -1,5 +1,9 @@
 ﻿@model Post
 
+@{
+    var color = ViewBag.Like == true ? "red" : "black";
+}
+
 <div class="card-group container">
       
     <div class="card">
@@ -11,11 +15,40 @@
         <img src="@Model.ImagePath" class="card-img-top" alt="imagePost">
 
         <div class="row no-gutters mt-2">
-            <h4><a href="#"><i class="far fa-heart text-dark ml-3"></i></a></h4>
+            <h4>
+                <a asp-controller="Posts" asp-action="TryMakeLike"
+                   asp-route-postId="@Model.Id" asp-route-actionName="GetPost">
+                    @if (ViewBag.Like == true)
+                    {
+                        <i class="fas fa-heart ml-3" style="color: @color;"></i>
+                    }
+                    else
+                    {
+                        <i class="far fa-heart text-dark ml-3"></i>    
+                    }
+                   
+                </a></h4>
             <h4><a href="#"><i class="far fa-comment text-dark ml-3"></i></a></h4>
         </div>
         <div class="card-body ">
             <p class="card-text"><b>@Model.Author.UserName</b> &#160 @Model.Description</p>
+            
+            @if (Model.Comments.Count() != 0)
+            {
+                @foreach (var comm in Model.Comments.ToList())
+                {
+                    <p>
+                        <b class="mr-3">@comm.User.UserName</b>
+                        @comm.CommentText
+                    </p>
+                }   
+            }
+             
+            
+            @{
+                await Html.RenderPartialAsync("../PartialViews/CommentAddingFormPartial", 
+                    new Comment {PostId = @Model.Id});
+            }
             <p class="card-text"><small class="text-muted">@Model.CreationDate.ToShortDateString()</small></p>
         </div>
 

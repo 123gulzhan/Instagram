@@ -23,11 +23,11 @@ namespace Instagram.Controllers
         private InstagramContext _db;
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
-        
+
         private readonly FileUploadService _uploadService;
         private readonly IHostEnvironment _environment;
 
-        public AccountsController(UserManager<User> userManager, SignInManager<User> signInManager, 
+        public AccountsController(UserManager<User> userManager, SignInManager<User> signInManager,
             FileUploadService uploadService, IHostEnvironment environment, InstagramContext db)
         {
             _userManager = userManager;
@@ -36,7 +36,7 @@ namespace Instagram.Controllers
             _environment = environment;
             _db = db;
         }
-        
+
         [HttpGet]
         public IActionResult Register()
         {
@@ -53,20 +53,20 @@ namespace Instagram.Controllers
             string avatarPath = $"/InstagramFiles/Avatars/{model.FormFile.FileName}";
             _uploadService.Upload(path, model.FormFile.FileName, model.FormFile);
             model.Avatar = avatarPath;
-            
+
             if (ModelState.IsValid)
             {
                 User user = new User
                 {
-                    UserName = model.Login,
+                    UserName = model.Login.ToLower(),
                     Email = model.Email,
                     Avatar = model.Avatar,
-                    Name = model.Name.ToLower(),
+                    Name = model.Name,
                     Description = model.Description,
                     PhoneNumber = model.PhoneNumber,
                     Sex = model.Sex == Sex.Female ? Sex.Female
-                    : model.Sex == Sex.Male ? Sex.Male
-                    : Sex.NotSelected
+                        : model.Sex == Sex.Male ? Sex.Male
+                        : Sex.NotSelected
                 };
                 var result = await _userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
@@ -81,6 +81,7 @@ namespace Instagram.Controllers
                     ModelState.AddModelError(string.Empty, error.Description);
                 }
             }
+
             return View(model);
         }
 
@@ -111,15 +112,17 @@ namespace Instagram.Controllers
 
                 if (result.Succeeded)
                 {
-                    if(!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+                    if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                     {
                         return Redirect(model.ReturnUrl);
                     }
 
                     return RedirectToAction("UserProfile", "Accounts");
                 }
+
                 ModelState.AddModelError("", "Неправильный логин и(или) пароль");
             }
+
             return View(model);
         }
 
@@ -132,30 +135,33 @@ namespace Instagram.Controllers
             return RedirectToAction("UserProfile", "Accounts");
         }
 
-        
+
         [HttpGet]
-        
         public async Task<IActionResult> UserProfile()
         {
             string userId = _userManager.GetUserId(User);
-            
-            User user = await _db.Users.FindAsync(userId);
+
+            User user = await _userManager.FindByIdAsync(userId);
             if (user != null)
             {
                 ProfileViewModel model = new ProfileViewModel
-                            {
-                                User = user,
-                                Posts = _db.Posts.AsQueryable().Where(p => p.AuthorId == userId).Include(p=>p.Author),
-                                Subscribes = _db.Subscribes.AsQueryable().Where(s => s.SubscriberId == userId),
-                                Followers = _db.Subscribes.AsQueryable().Where(s => s.UserId == userId)
-                            };
-                            return View(model);
+                {
+                    User = user,
+                    Posts = _db.Posts.AsQueryable().Where(p => p.AuthorId == userId)
+                        .Include(p => p.Author)
+                        .OrderByDescending(p => p.CreationDate),
+                    Subscribes = _db.Subscribes.AsQueryable().Where(s => s.SubscriberId == userId),
+                    Followers = _db.Subscribes.AsQueryable().Where(s => s.UserId == userId)
+                };
+                ViewBag.UserPostsCount = model.Posts.Count();
+                return View(model);
             }
 
+            ViewBag.UserPostsCount = 0;
             return View(new ProfileViewModel());
         }
-        
-        
-        
+
+
+
     }
 }
