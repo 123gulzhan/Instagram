@@ -27,17 +27,12 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="navbar-collapse collapse">
-                
-                
-               
                 <form asp-action="Searching" asp-controller="Users" method="get" 
                     class="form-inline col-md-10 my-2 my-lg-0 d-flex justify-content-center">
                         <input id="search" name="search" class="form-control col-md-6 mr-sm-2" style="width: 160px;" type="search" placeholder="Поиск" aria-label="Search"/>
                         
                         <button class="btn btn-success my-2 my-sm-0" type="submit" id="submit">Search</button>
                     </form>
-                
-                
                 <div class="login-group col-md-2 d-flex justify-content-end">
                     @if (User.Identity.IsAuthenticated)
                     {

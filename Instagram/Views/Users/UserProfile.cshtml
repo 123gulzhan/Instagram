@@ -16,8 +16,8 @@
 @if (!User.Identity.IsAuthenticated)
 {
   <div class="text-center mt-5">
- <h4> <a asp-controller="Accounts" asp-action="Login" class="text-dark">Вход</a></h4>
-  <p><a asp-controller="Accounts" asp-action="Register" class="text-dark">Регистрация</a></p>
+    <h4> <a asp-controller="Accounts" asp-action="Login" class="text-dark">Вход</a></h4>
+    <p><a asp-controller="Accounts" asp-action="Register" class="text-dark">Регистрация</a></p>
   </div>
 }
 else
@@ -42,7 +42,6 @@ else
           <div class="pl-5">
             <table class="text-center">
               <tr>
-                
                 <td class="pr-5">@postsCount</td>
                 <td class="pr-5">@Model.Followers.Count()</td>
                 <td class="pr-5">@Model.Subscribes.Count()</td>
@@ -63,7 +62,6 @@ else
         </div>
       </div>
     </div>
-
   <div>
     @if (@Model.User.Id == UserManager.GetUserId(User))
     {
@@ -71,7 +69,6 @@ else
     }
     else
     {
-      
       <form method="post" asp-controller="Users" asp-action="TrySubscribe" asp-route-userId="@Model.User.Id"><button class="btn btn-light border-secondary my-3">@ViewBag.IsSubscribed</button></form>
     }
   </div>

@@ -5,7 +5,6 @@
 }
 
 <div class="card-group container">
-      
     <div class="card">
         <h5 class="py-4 pl-3">
             <img src="@Model.Author.Avatar" class="rounded-circle mr-3" alt="user's Avatar" style="width: 34px;">
@@ -36,13 +35,9 @@
             {
                 @foreach (var comm in Model.Comments.ToList())
                 {
-                    <p>
-                        <b class="mr-3">@comm.User.UserName</b>
-                        @comm.CommentText
-                    </p>
+                    <p><b class="mr-3">@comm.User.UserName</b>@comm.CommentText</p>
                 }
             }
-
 
             @{
                 await Html.RenderPartialAsync("../PartialViews/CommentAddingFormPartial",
@@ -50,6 +45,5 @@
             }
             <p class="card-text"><small class="text-muted">@Model.CreationDate.ToShortDateString()</small></p>
         </div>
-
     </div>
 </div>

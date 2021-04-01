@@ -33,19 +33,32 @@ namespace Instagram.Controllers
         }
 
         // GET
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            ViewBag.AllLikes = _db.Likes.ToList();
-            ViewBag.AllLikesCount = _db.Likes.ToList().Count();
+            User user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return RedirectToAction("UserProfile", "Users");
+            }
+            
             PostsIndexViewModel model = new PostsIndexViewModel
             {
                 Posts = _db.Posts
-                    .Include(p => p.Likes).ThenInclude(l=> l.User)
-                    .Include(p => p.Comments).ThenInclude(c=> c.User)
-                    .Include(p => p.Author)
+                    .Join(_db.Subscribes.Where(s => s.SubscriberId == user.Id),
+                    p => p.AuthorId,
+                    s => s.UserId,
+                    (p, s) => new Post
+                    {
+                       Id = p.Id,
+                       ImagePath = p.ImagePath,
+                       Description = p.Description,
+                       CreationDate = p.CreationDate,
+                       AuthorId =  s.UserId,
+                       Author = s.User,
+                       Likes = p.Likes,
+                       Comments = p.Comments
+                    })
                     .OrderByDescending(p=>p.CreationDate)
-                
-               
             };
             return View(model);
         }
