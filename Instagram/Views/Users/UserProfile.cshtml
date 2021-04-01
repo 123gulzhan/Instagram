@@ -72,7 +72,7 @@ else
     else
     {
       
-      <form method="post" asp-controller="Accounts" asp-action="TrySubscribe" asp-route-userId="@Model.User.Id"><button class="btn btn-light border-secondary my-3">@ViewBag.IsSubscribed</button></form>
+      <form method="post" asp-controller="Users" asp-action="TrySubscribe" asp-route-userId="@Model.User.Id"><button class="btn btn-light border-secondary my-3">@ViewBag.IsSubscribed</button></form>
     }
   </div>
   

@@ -30,7 +30,7 @@
                 
                 
                
-                <form asp-action="Searching" asp-controller="Accounts" method="get" 
+                <form asp-action="Searching" asp-controller="Users" method="get" 
                     class="form-inline col-md-10 my-2 my-lg-0 d-flex justify-content-center">
                         <input id="search" name="search" class="form-control col-md-6 mr-sm-2" style="width: 160px;" type="search" placeholder="Поиск" aria-label="Search"/>
                         
@@ -41,7 +41,7 @@
                 <div class="login-group col-md-2 d-flex justify-content-end">
                     @if (User.Identity.IsAuthenticated)
                     {
-                        <a asp-controller="Accounts" asp-action="UserProfile"><i class="far fa-user text-dark"></i></a>
+                        <a asp-controller="Users" asp-action="UserProfile"><i class="far fa-user text-dark"></i></a>
                     }
                 </div>
                 
@@ -57,7 +57,7 @@
 
 <footer class="border-top footer text-muted">
     <div class="container">
-        &copy; 2021 <a asp-area="" asp-controller="Accounts" asp-action="UserProfile">- Instagram - </a>
+        &copy; 2021 <a asp-area="" asp-controller="Users" asp-action="UserProfile">- Instagram - </a>
     </div>
 </footer>
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
