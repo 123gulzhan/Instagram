@@ -35,6 +35,8 @@ namespace Instagram.Controllers
         // GET
         public IActionResult Index()
         {
+            ViewBag.AllLikes = _db.Likes.ToList();
+            ViewBag.AllLikesCount = _db.Likes.ToList().Count();
             PostsIndexViewModel model = new PostsIndexViewModel
             {
                 Posts = _db.Posts

@@ -23,32 +23,32 @@
         <div class="row no-gutters mt-2">
           <h4>
             <a asp-controller="Posts" asp-action="TryMakeLike" asp-route-postId="@post.Id" asp-route-actionName="Index">
-              @if (post.Likes.Count() != 0)
-              {
-                foreach (var like in post.Likes.ToList())
+              @foreach (var like in post.Likes.ToList())
                 {
                   if (@like.UserId.Equals(UserManager.GetUserId(User)))
                   {
                     <i class="fas fa-heart ml-3" style="color: #ff0000;"></i>
                   }
+                  else
+                  {
+                    <i class="far fa-heart text-dark ml-3"></i>
+                  }
                 }
-              }
-              else
-              {
-                <i class="far fa-heart text-dark ml-3"></i>
-              }
+              
+             
             </a></h4>
 
           <h4><a href="#"><i class="far fa-comment text-dark ml-3"></i></a></h4>
         </div>
         <div class="card-body p-1 mt-3 ml-3">
+          <div class="mt-3"><h6>Нравится: @post.Likes.Count()</h6></div>         
           @if (post.Description != null)
           {
             <p class="card-text">
               <b>@post.Author.UserName</b> &#160 @post.Description
             </p>
           }
-          
+
           @if (post.Comments.Count() != 0)
           {
             @foreach (var comm in post.Comments.ToList())
@@ -57,16 +57,16 @@
                 <b class="mr-3">@comm.User.UserName</b>
                 @comm.CommentText
               </p>
-            }   
+            }
           }
-         
-          
+
+
           @{
-              await Html.RenderPartialAsync("../PartialViews/CommentAddingFormPartial", 
-                new Comment {PostId = post.Id});
+            await Html.RenderPartialAsync("../PartialViews/CommentAddingFormPartial",
+              new Comment {PostId = post.Id});
           }
-          
-          
+
+
           <p class="card-text">
             <small class="text-muted">@post.CreationDate.ToShortDateString()
             </small>

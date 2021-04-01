@@ -68,7 +68,7 @@ namespace Instagram
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Accounts}/{action=UserProfile}/{id?}");
+                    pattern: "{controller=Users}/{action=UserProfile}/{id?}");
             });
         }
     }
