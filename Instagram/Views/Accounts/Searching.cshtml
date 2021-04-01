@@ -12,7 +12,7 @@
         <ul>
             @foreach (var user in Model)
             {
-                <li><a asp-action="UserProfile" asp-route-id="@user.Id">@user.UserName</a></li>
+                <li><a asp-action="UserProfile" asp-route-searchId="@user.Id">@user.UserName</a></li>
             }
         </ul>
     </div>

@@ -137,22 +137,26 @@ namespace Instagram.Controllers
 
 
         [HttpGet]
-        public async Task<IActionResult> UserProfile(string id)
+        public async Task<IActionResult> UserProfile(string id, string searchId)
         {
-            User user;
-            string userId;
-            /*if (id != null)
-            {
-                userId = id;
-            }
-            else
-            {
-                userId = _userManager.GetUserId(User);
-            }
-            */
+            string userId = id != null ? id : _userManager.GetUserId(User);
             
-            userId = id != null ? userId = id : _userManager.GetUserId(User);
-            user = await _userManager.FindByIdAsync(userId);
+            if (searchId != null)
+            {
+                bool isSubscribed = false;
+                List<Subscribe> subscribes = _db.Subscribes.ToList();
+                foreach (var sub in subscribes)
+                {
+                    if (sub.SubscriberId == userId && sub.UserId == searchId)
+                    {
+                        isSubscribed = true;
+                    }
+                }
+                ViewBag.IsSubscribed = isSubscribed ? "Отписаться" : "Подписаться";
+                userId = searchId;
+            }
+            
+            User user = await _userManager.FindByIdAsync(userId);
             if (user != null)
             {
                 ProfileViewModel model = new ProfileViewModel
@@ -174,7 +178,6 @@ namespace Instagram.Controllers
 
         
         [HttpGet]
-        //-Логин, -Электронная почта, -Имя, -Информация о пользователе. 
         public IActionResult Searching(string search)
         {
             IQueryable<User> allUsers = _userManager.Users;
@@ -191,6 +194,49 @@ namespace Instagram.Controllers
                 }
 
                 return View(resultUsers);
+            }
+
+            return NotFound();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TrySubscribe(string userId) 
+        {
+            string subscriberId = _userManager.GetUserId(User);
+            User subscriber = await _userManager.GetUserAsync(User);
+            bool isSubscribed = false;
+
+            if (userId != null)
+            {
+                User user = await _userManager.FindByIdAsync(userId);
+                if (user != null)
+                {
+                    List<Subscribe> subscribes = _db.Subscribes.ToList();
+                    foreach (var subscribe in subscribes)
+                    {
+                        if (subscribe.SubscriberId == subscriberId && subscribe.UserId == userId)
+                        {
+                            _db.Entry(subscribe).State = EntityState.Deleted;
+                            _db.SaveChanges();
+                            isSubscribed = true;
+                        }
+                    }
+
+                    ViewBag.IsSubscribed = isSubscribed ? "Отписаться" : "Подписаться";
+                    if (!isSubscribed)
+                    {
+                         Subscribe subscribe = new Subscribe
+                                            {
+                                                UserId = user.Id,
+                                                User = user,
+                                                SubscriberId = subscriberId,
+                                                Subscriber = subscriber
+                                            };
+                                            _db.Subscribes.Add(subscribe);
+                                            _db.SaveChanges();
+                    }
+                }
+                return RedirectToAction("UserProfile", new {searchId = userId});
             }
 
             return NotFound();
