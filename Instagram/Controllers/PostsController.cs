@@ -32,7 +32,7 @@ namespace Instagram.Controllers
             _userManager = userManager;
         }
 
-        // GET
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             User user = await _userManager.GetUserAsync(User);
@@ -84,7 +84,6 @@ namespace Instagram.Controllers
                 post.Comments = new List<Comment>();
                 post.Likes = new List<Like>();
 
-
                 string dirName = "wwwroot/InstagramFiles/PostsImagesByUserId";
                 DirectoryInfo dirInfo = new DirectoryInfo(dirName);
                 string[] dirs = Directory.GetDirectories(dirName);
@@ -92,7 +91,6 @@ namespace Instagram.Controllers
                 {
                     dirInfo.CreateSubdirectory(userId);
                 }
-
 
                 string path = Path.Combine(_environment.ContentRootPath,
                     $"wwwroot\\InstagramFiles\\PostsImagesByUserId\\{userId}\\");
@@ -102,15 +100,13 @@ namespace Instagram.Controllers
 
                 //if (ModelState.IsValid)
                 //{
+                //почему то эту валидацию не проходит, хотя все корректно отрабатывает
                 await _db.Posts.AddAsync(post);
                 await _db.SaveChangesAsync();
                 return RedirectToAction("Index", "Posts");
                 //}
-
             }
-
             return NotFound();
-
         }
 
 

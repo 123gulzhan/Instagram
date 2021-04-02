@@ -5,12 +5,13 @@ namespace Instagram.ViewModels
 {
     public class LoginViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "Заполните поле")]
         [Display(Name = "LoginOrEmail")]
+        [Remote("CheckLoginOrEmail", "Validation", ErrorMessage = "Такой логин(email) не зарегистрирован")]
         public string LoginOrEmail { get; set; }
         
         
-        [Required]
+        [Required(ErrorMessage = "Заполните поле")]
         [DataType(DataType.Password)]
         [Display(Name = "Пароль")]
         public string Password { get; set; }
