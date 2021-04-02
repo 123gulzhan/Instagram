@@ -49,6 +49,15 @@ namespace Instagram.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            string rootInstagramDirName = "wwwroot/InstagramFiles/";
+            string avatarsDirName = "Avatars";
+            DirectoryInfo dirInfo = new DirectoryInfo(rootInstagramDirName);
+            string[] dirs = Directory.GetDirectories(rootInstagramDirName);
+            if (!dirs.AsQueryable().Contains(avatarsDirName))
+            {
+                dirInfo.CreateSubdirectory(avatarsDirName);
+            }
+            
             string path = Path.Combine(_environment.ContentRootPath, "wwwroot\\InstagramFiles\\Avatars\\");
             string avatarPath = $"/InstagramFiles/Avatars/{model.FormFile.FileName}";
             _uploadService.Upload(path, model.FormFile.FileName, model.FormFile);

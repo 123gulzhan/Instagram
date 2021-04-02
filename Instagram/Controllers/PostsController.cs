@@ -40,25 +40,25 @@ namespace Instagram.Controllers
             {
                 return RedirectToAction("UserProfile", "Users");
             }
-            
+
             PostsIndexViewModel model = new PostsIndexViewModel
             {
-                Posts = _db.Posts
+                Posts = _db.Posts.Include(p => p.Comments).ThenInclude(c => c.User)
                     .Join(_db.Subscribes.Where(s => s.SubscriberId == user.Id),
-                    p => p.AuthorId,
-                    s => s.UserId,
-                    (p, s) => new Post
-                    {
-                       Id = p.Id,
-                       ImagePath = p.ImagePath,
-                       Description = p.Description,
-                       CreationDate = p.CreationDate,
-                       AuthorId =  s.UserId,
-                       Author = s.User,
-                       Likes = p.Likes,
-                       Comments = p.Comments
-                    })
-                    .OrderByDescending(p=>p.CreationDate)
+                        p => p.AuthorId,
+                        s => s.UserId,
+                        (p, s) => new Post
+                        {
+                            Id = p.Id,
+                            ImagePath = p.ImagePath,
+                            Description = p.Description,
+                            CreationDate = p.CreationDate,
+                            AuthorId = s.UserId,
+                            Author = s.User,
+                            Likes = p.Likes,
+                            Comments = p.Comments
+                        })
+                    .OrderByDescending(p => p.CreationDate)
             };
             return View(model);
         }
@@ -84,12 +84,21 @@ namespace Instagram.Controllers
                 post.Comments = new List<Comment>();
                 post.Likes = new List<Like>();
 
-                string dirName = "wwwroot/InstagramFiles/PostsImagesByUserId";
-                DirectoryInfo dirInfo = new DirectoryInfo(dirName);
-                string[] dirs = Directory.GetDirectories(dirName);
-                if (!dirs.AsQueryable().Contains(userId))
+                string root = "wwwroot/InstagramFiles/";
+                string posts = "PostsImagesByUserId/";
+                DirectoryInfo rootInfo = new DirectoryInfo(root);
+                string[] rootDirs = Directory.GetDirectories(root);
+                if (!rootDirs.AsQueryable().Contains(posts))
                 {
-                    dirInfo.CreateSubdirectory(userId);
+                    rootInfo.CreateSubdirectory(posts);
+                }
+
+                posts = string.Concat(root, posts);
+                DirectoryInfo postsInfo = new DirectoryInfo(posts);
+                string[] postsDirs = Directory.GetDirectories(posts);
+                if (!postsDirs.AsQueryable().Contains(userId))
+                {
+                    postsInfo.CreateSubdirectory(userId);
                 }
 
                 string path = Path.Combine(_environment.ContentRootPath,
@@ -106,6 +115,7 @@ namespace Instagram.Controllers
                 return RedirectToAction("Index", "Posts");
                 //}
             }
+
             return NotFound();
         }
 
@@ -159,27 +169,30 @@ namespace Instagram.Controllers
             {
                 post.Author = await _userManager.FindByIdAsync(post.AuthorId);
                 post.Likes = (from like in _db.Likes.Include(l => l.User)
-                        .Include(l => l.Post) where like.PostId == postId
+                        .Include(l => l.Post)
+                    where like.PostId == postId
                     select like).ToList();
                 post.Comments = (from comment in _db.Comments.Include((c => c.User))
-                        .Include(c => c.Post) where comment.PostId == postId
+                        .Include(c => c.Post)
+                    where comment.PostId == postId
                     select comment).ToList();
-                
-                bool result = false;
+
+                bool result;
                 if (post.Likes.Any())
                 {
-                    foreach (var like in post.Likes)
-                    {
-                        if (like.UserId.Equals(_userManager.GetUserId(User)))
-                        {
-                            result = true;
-                        }
-                        
-                    }
+                    result = post.Likes.FirstOrDefault
+                        (l => l.UserId == _userManager.GetUserId(User)) != null
+                        ? true
+                        : false;
+                }
+                else
+                {
+                    result = false;
                 }
 
                 if (!result)
                 {
+                    ViewBag.Like = true;
                     await _db.Likes.AddAsync(new Like
                     {
                         PostId = postId,
@@ -188,7 +201,7 @@ namespace Instagram.Controllers
                         User = await _userManager.GetUserAsync(User)
                     });
                     await _db.SaveChangesAsync();
-                    ViewBag.Like = true;
+
                 }
                 else
                 {
@@ -200,8 +213,9 @@ namespace Instagram.Controllers
                         ViewBag.Like = false;
                     }
                 }
-                return RedirectToAction(actionName, new{ postId = postId});
+                return RedirectToAction(actionName, new {postId = postId});
             }
+
             return NotFound();
         }
 
@@ -212,14 +226,14 @@ namespace Instagram.Controllers
             if (comment != null)
             {
                 comment.UserId = _userManager.GetUserId(User);
-                comment.User =  await _userManager.FindByIdAsync(comment.UserId);
+                comment.User = await _userManager.FindByIdAsync(comment.UserId);
                 comment.Post = _db.Posts.FirstOrDefault(p => p.Id == comment.PostId);
-                
+
                 _db.Comments.Add(comment);
                 _db.SaveChanges();
             }
 
-            return RedirectToAction("GetPost", "Posts", new { postId = comment.PostId});
+            return RedirectToAction("GetPost", "Posts", new {postId = comment.PostId});
         }
     }
 }

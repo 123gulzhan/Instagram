@@ -18,7 +18,7 @@
           <img src="@post.Author.Avatar" class="rounded-circle mr-3" alt="user's Avatar" style="width: 34px;">
           @post.Author.UserName
         </h5>
-        
+
         <img src="@post.ImagePath" class="card-img-top" alt="postImage">
         <div class="row no-gutters mt-2">
           <h4>
@@ -43,7 +43,7 @@
           <h4><a href="#"><i class="far fa-comment text-dark ml-3"></i></a></h4>
         </div>
         <div class="card-body p-1 mt-3 ml-3">
-          <div><h6>Нравится: @post.Likes.Count()</h6></div>         
+          <div><h6>Нравится: @post.Likes.Count()</h6></div>
           @if (post.Description != null)
           {
             <p class="card-text">
@@ -55,10 +55,7 @@
           {
             @foreach (var comm in post.Comments.ToList())
             {
-              <p>
-                <b class="mr-3">@comm.User.UserName</b>
-                @comm.CommentText
-              </p>
+              <p><b class="mr-3">@comm.User.UserName</b>@comm.CommentText</p>
             }
           }
 
